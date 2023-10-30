@@ -20,6 +20,7 @@ void setup() {
    * Uncomment for LAB STEP 4a
    * Initialize software UART pins and behaviors
    */
+  /*
   pinMode(inPin, INPUT);
   pinMode(outPin, OUTPUT);
   digitalWrite(outPin, HIGH);
@@ -30,7 +31,7 @@ void setup() {
   for (int i = 0; i < 3; i++) {
     pinMode(ledPins[i], OUTPUT);
     digitalWrite(ledPins[i], LOW);
-  } // end comment
+  }*/
   
   if (SENDER) { setupWiFi(); }
 }
@@ -47,6 +48,7 @@ void loop() {
        */
       
       // Send a new request
+      delay(2000); // remove me!
       sendHTTPReq();
     }
 

@@ -15,6 +15,7 @@ void sendHTTPReq() {
   sprintf(httpGETbuf, "GET /integers/?num=1&min=1&max=3&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
   client.println(httpGETbuf);
   client.println("Host: www.random.org");
+  client.println();
 }
 
 /*
@@ -29,8 +30,9 @@ bool readWebpage() {
   }
 
   while (client.available()) {
-    Serial.println(client.read());
+    Serial.print((char) client.read());
   }
+  Serial.println();
   return true;
 
   /*
