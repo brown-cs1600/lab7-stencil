@@ -11,7 +11,7 @@ unsigned long reqTime; // time of NTP request
 unsigned long secsSince1900; // NTP response
 
 void sendHTTPReq() {
-  // Lab step TODO: change the second argument to be the current time since Jan 1, 1990 in seconds
+  // LAB STEP 4e: change the second argument to be the current time since Jan 1, 1990 in seconds
   sprintf(httpGETbuf, "GET /integers/?num=1&min=1&max=3&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
   client.println(httpGETbuf);
   client.println("Host: www.random.org");
@@ -97,8 +97,12 @@ void connectToNTP() {
   Serial.println("Requesting NTP time");
   sendNTPpacket(timeServer); // send an NTP packet to a time server
   reqTime = millis();
-  // wait to see if a reply is available
-  delay(1000);
+  // wait to see if a reply is available; resend request if needed
+  while(! Udp.parsePacket() ) {
+    delay(2000);
+    sendNTPpacket(timeServer);
+    reqTime = millis();
+  }
   if ( Udp.parsePacket() ) {
     Serial.println("packet received");
     // We've received a packet, read the data from it
