@@ -11,6 +11,13 @@ unsigned long reqTime; // time of NTP request
 unsigned long secsSince1900; // NTP response
 
 void sendHTTPReq() {
+  // Enforce at least 500 ms between requests
+  static unsigned long lastReq = 0;
+  unsigned long waitTime = millis() - lastReq;
+  if (waitTime < 500) {
+    delay(500 - waitTime);
+  }
+  lastReq = millis();
   // LAB STEP 4e: change the second argument to be (the current time since Jan 1, 1990 in seconds) / 3
   sprintf(httpGETbuf, "GET /integers/?num=1&min=1&max=3&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
   client.println(httpGETbuf);
