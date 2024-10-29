@@ -14,8 +14,15 @@ BLEUnsignedIntCharacteristic outboxKey(UUID_CHARACTERISTIC_OUTBOX_KEY, 0); // TO
  */
 void homeInit() {
   if (!BLE.begin()) {
-    Serial.println("starting Bluetooth® Low Energy module failed!");
-    while (1);
+    Serial.println("BLE failed to start. Attempting a reset...");
+    Serial.println("Please be patient while you wait for the device to reconnect");
+    Serial.println("Don't unplug or reset your device! Just close and open the serial monitor again if nothing appears,");
+    Serial.println("and send any character to begin the sketch");
+    delay(1000);
+    static const char RESET[] = "AT+RESET\n";
+    Serial2.write(RESET, sizeof(RESET) - 1);
+    delay(2000);
+    NVIC_SystemReset();
   }
 
   // set the local name peripheral advertises
