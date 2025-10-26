@@ -24,14 +24,14 @@ void setup() {
   # else // RECEIVER
   matrix.begin();
   pinMode(inPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(inPin), uartReceive, FALLING);
-  # endif
+  attachInterrupt(digitalPinToInterrupt(inPin), uartReceive, FALLING); // detect UART start bit
+  # endif // ifdef SENDER
 }
 
 void loop() {
   # ifdef SENDER
   loopSender();
-  # else
+  # else // RECEIVER
   loopReceiver();
-  # endif
+  # endif // ifdef SENDER
 }

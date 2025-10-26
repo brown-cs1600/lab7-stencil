@@ -2,9 +2,9 @@
  * Code to support a circular buffer of 31 (32 - 1) elements
  */
 const int bufSize = 32;
-volatile byte buf[bufSize];
-volatile int iStart = 0;
-volatile int iEnd = 0;
+static volatile byte buf[bufSize];
+static volatile int iStart = 0;
+static volatile int iEnd = 0;
 
 /*
  * Returns true if the buffer is empty and false otherwise

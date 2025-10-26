@@ -56,18 +56,20 @@ inline void loopReceiver() {
     // check that this is the start of a frame
     if (indx >= 3) return;
     // check to see that the next four bytes look like valid data
+    // keep them in the buffer for now in case we encounter something invalid
     uint32_t dispVal = 0;
     for (int i = 0; i < 4; i++) {
       byte b = bufGet(i);
       Serial.println(b, HEX);
-      if (b == 0xff) return;
+      if (b == 0xff) return; // end byte encountered too early
       dispVal |= ((uint32_t) b) << (i * 8);
     }
 
     // check for end message
     Serial.println(bufGet(4), HEX);
-    if (bufGet(4) != 0xff) return;
+    if (bufGet(4) != 0xff) return; // did not see expected end byte
 
+    // successfully processed the last 5 bytes; remove them
     for (int i = 0; i < 5; i++) {
       bufRemove();
     }
@@ -80,4 +82,4 @@ inline void loopReceiver() {
   }
 }
 
-#endif
+#endif // ifndef SENDER

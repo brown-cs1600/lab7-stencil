@@ -14,10 +14,10 @@ void uartSend(byte B) {
   byte parity = 0;
   // Send 8 bits, LSB first
   while (i < ___) { // TODO
-    if ((B ___ ) == ___ ) { // TODOD
+    if ((B ___ ) == ___ ) { // TODO
       uartDelay(lastClockTime);
       lastClockTime = micros();
-      digitalWrite(outPin, HIGH_BITFLIP);
+      digitalWrite(outPin, HIGH); // step 2e: change to HIGH_BITFLIP
       parity = parity ____; // TODO
     } else {
       uartDelay(lastClockTime);
@@ -66,4 +66,4 @@ inline void loopSender() {
   delay(1000);
 }
 
-#endif
+#endif // ifdef SENDER
