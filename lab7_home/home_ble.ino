@@ -44,7 +44,7 @@ void homeInit() {
   // start advertising
   BLE.advertise();
 
-  Serial.println(("Bluetooth® device active, waiting for connections..."));
+  Serial.println(("Bluetooth device active, waiting for connections..."));
 }
 
 /*
@@ -53,7 +53,7 @@ void homeInit() {
 void checkInbox() {
   static bool initialized = false;
 
-  // listen for Bluetooth® Low Energy peripherals to connect:
+  // listen for BLE peripherals to connect:
   BLEDevice central = BLE.central();
 
   // if a central is connected to peripheral:
@@ -83,8 +83,8 @@ void checkInbox() {
           Serial.println("initializing!");
           BLE.disconnect();
           const String nameCopy = arduino::String(name);
-
-          /* TODO: second sequence diagram */
+          // TODO: uncomment below for step 3C
+          //initOutbox(nameCopy, key);
 
           BLE.advertise();
           initialized = true;
@@ -96,6 +96,22 @@ void checkInbox() {
       }
     }
   }
+}
+
+/*
+ * Initializes the outbox according to the second sequence diagram
+ */
+void initOutbox(const String monsterName, uint32_t key) {
+  // TODO: set name as monsterName (remember to convert to c_str)
+
+  BLE.setAdvertisedService(outboxService);
+
+  // TODO: add characteristic KEY to OUTBOX service
+
+  // TODO: set value of KEY characteristic
+  // outboxKey.writeValue(...)
+
+  BLE.addService(outboxService);
 }
 
 /*

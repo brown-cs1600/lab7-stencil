@@ -24,6 +24,7 @@ const String password = "Custom password! (must be 16 characters)";
 /* BLE functions */
 void homeInit();
 void checkInbox();
+void initOutbox(const String monsterName, uint32_t key);
 String getBLEStringValue(BLECharacteristic c);
 
 /* AES128 utilities */
