@@ -18,34 +18,88 @@ void roamInit() {
   }
 
   // Scan for corresponding home device
-  const char* specialNameCStr = specialName.c_str();
-  BLE.scanForName(specialNameCStr);
+  BLEDevice home = connectByName(specialName);
+
+  Serial.println("Connecting to our home device!");
+
+  Serial.print("Found ");
+  Serial.print(home.address());
+  savedAddress = home.address();
+  Serial.print(" '");
+  Serial.print(home.localName());
+  Serial.println("'");
+
+  // IMPORTANT: need to connect and discoverAttributes before reading/writing characterstics
+  Serial.print("Sending over the computed monster ");
+  Serial.println(getMonsterName());
+  sendMonster(home, getMonsterKey(), getMonsterName());
+  addMonster(getMonsterName());
+  home.disconnect();
+}
+
+/*
+ * wrapper for BLE scanForName function
+ * blocks until peripheral is found
+ */
+BLEDevice connectByName(const String name) {
+  const char* nameCStr = name.c_str();
+  BLE.scanForName(nameCStr);
   BLEDevice peripheral = BLE.available();
 
   while (!peripheral) {
-    BLE.scanForName(specialNameCStr);
+    BLE.scanForName(nameCStr);
     peripheral = BLE.available();
   }
-
-  Serial.println("Connected to our home device!");
-
-  Serial.print("Found ");
-  Serial.print(peripheral.address());
-  savedAddress = peripheral.address();
-  Serial.print(" '");
-  Serial.print(peripheral.localName());
-  Serial.println("'");
-
+  
   BLE.stopScan();
 
-  // IMPORTANT: need to connect and discoverAttributes before reading/writing characterstics
+  // IMPORTANT: need to connect and discoverAttributes if we'll be reading/writing characterstics
   peripheral.connect();
   peripheral.discoverAttributes();
-  Serial.print("Sending over the computed monster ");
-  Serial.println(getMonsterName());
-  sendMonster(peripheral, getMonsterKey(), getMonsterName());
-  addMonster(getMonsterName());
-  peripheral.disconnect();
+  return peripheral;
+}
+
+/*
+ * wrapper for BLE scanForUuid function 
+ * to connect to devices with outbox service
+ * ignores monsters that were already found
+ * blocks until peripheral is found
+ */
+BLEDevice connectToOutboxUuid() {
+  BLE.scanForUuid(UUID_SERVICE_OUTBOX);
+  BLEDevice peripheral = BLE.available();
+
+  // TODO: modify while guard to ignore monsters that were already found
+  // (get peripheral name by running peripheral.localName)
+  while (!peripheral) {
+    BLE.scanForUuid(UUID_SERVICE_OUTBOX);
+    peripheral = BLE.available();
+  }
+  BLE.stopScan();
+
+  peripheral.connect();
+  peripheral.discoverAttributes();
+  return peripheral;
+}
+
+/*
+ * wrapper for BLE scanForAddress function
+ * blocks until peripheral is found
+ */
+BLEDevice connectByAddress(const String addr) {
+  const char* addrCStr = addr.c_str();
+  BLE.scanForAddress(addrCStr);
+  BLEDevice peripheral = BLE.available();
+
+  while (!peripheral) {
+    BLE.scanForAddress(addrCStr);
+    peripheral = BLE.available();
+  }
+  BLE.stopScan();
+  
+  peripheral.connect();
+  peripheral.discoverAttributes();
+  return peripheral;
 }
 
 /*
@@ -53,7 +107,20 @@ void roamInit() {
  * If home devices have keys, send key and name to local home device
  */
 void scanForMonsters() {
-  // TODO: implement me based on the sequence diagram!
+  BLEDevice remote = connectToOutboxUuid();
+  Serial.print("Found monster ");
+  String foundName = remote.localName();
+  Serial.println(foundName);
+  
+  // TODO: read key characteristic
+
+  remote.disconnect();
+
+  BLEDevice local = connectByAddress(savedAddress);
+  // TODO: connect to local home device and send them the new monster for displaying!
+  // remember that sendMonster does all the hashing for us
+  local.disconnect();
+
 }
 
 /*
