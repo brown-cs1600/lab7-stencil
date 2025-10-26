@@ -61,7 +61,7 @@ void displayMonster(int index) {
         uint32_t decryptid[3];
 
         /* TODO: compute the decryptid based on the encryptid and the key */
-        for (int i = 0; i++; i < 3) {
+        for (int i = 0; i < 3; i++) {
           //decryptid[i] = ...
         }
 

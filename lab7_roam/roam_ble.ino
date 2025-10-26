@@ -29,7 +29,6 @@ void roamInit() {
   Serial.print(home.localName());
   Serial.println("'");
 
-  // IMPORTANT: need to connect and discoverAttributes before reading/writing characterstics
   Serial.print("Sending over the computed monster ");
   Serial.println(getMonsterName());
   sendMonster(home, getMonsterKey(), getMonsterName());
