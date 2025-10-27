@@ -82,9 +82,8 @@ void checkInbox() {
         if (!initialized) {
           Serial.println("initializing!");
           BLE.disconnect();
-          const String nameCopy = arduino::String(name);
           // TODO: uncomment below for step 3C
-          //initOutbox(nameCopy, key);
+          //initOutbox(name, key);
 
           BLE.advertise();
           initialized = true;
@@ -102,7 +101,8 @@ void checkInbox() {
  * Initializes the outbox according to the second sequence diagram
  */
 void initOutbox(const String monsterName, uint32_t key) {
-  // TODO: set name as monsterName (remember to convert to c_str)
+  static String nameCopy = arduino::String(monsterName); // to get around bad BLE data management...
+  // TODO: set name as nameCopy (remember to convert to c_str)
 
   BLE.setAdvertisedService(outboxService);
 
