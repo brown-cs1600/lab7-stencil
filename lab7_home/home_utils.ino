@@ -61,8 +61,8 @@ void displayMonster(int index) {
         uint32_t decryptid[3];
 
         /* TODO: compute the decryptid based on the encryptid and the key */
-        for (int i = 0; i < 3; i++) {
-          //decryptid[i] = ...
+        for (int j = 0; j < 3; j++) {
+          //decryptid[j] = ...
         }
 
         matrix.loadFrame(decryptid);

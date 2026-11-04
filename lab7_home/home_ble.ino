@@ -1,12 +1,14 @@
 /* Initialize BLE services and characterstics */
 BLEService inboxService(UUID_SERVICE_INBOX);
-BLEUnsignedIntCharacteristic inboxKey(UUID_CHARACTERISTIC_INBOX_KEY, BLEWriteWithoutResponse);
-BLEUnsignedIntCharacteristic inboxKeyHashed(UUID_CHARACTERISTIC_INBOX_KEY_HASHED, BLEWriteWithoutResponse);
-BLECharacteristic inboxName(UUID_CHARACTERISTIC_INBOX_NAME, BLEWriteWithoutResponse, 256, 0);
-BLECharacteristic inboxNameHashed(UUID_CHARACTERISTIC_INBOX_NAME_HASHED, BLEWriteWithoutResponse, 256, 0);
+BLEUnsignedIntCharacteristic inboxKey(UUID_CHARACTERISTIC_INBOX_KEY, BLEWrite);
+BLEUnsignedIntCharacteristic inboxKeyHashed(UUID_CHARACTERISTIC_INBOX_KEY_HASHED, BLEWrite);
+BLECharacteristic inboxName(UUID_CHARACTERISTIC_INBOX_NAME, BLEWrite, 256, 0);
+BLECharacteristic inboxNameHashed(UUID_CHARACTERISTIC_INBOX_NAME_HASHED, BLEWrite, 256, 0);
 
 BLEService outboxService(UUID_SERVICE_OUTBOX);
 BLEUnsignedIntCharacteristic outboxKey(UUID_CHARACTERISTIC_OUTBOX_KEY, 0); // TODO: characteristic
+
+const unsigned long CONN_TIMEOUT = 10000;
 
 /*
  * Initialize home device with special name
@@ -24,6 +26,7 @@ void homeInit() {
     delay(2000);
     NVIC_SystemReset();
   }
+  BLE.setTimeout(1000); // ATT operation timeout window (to avoid certain functions hanging)
 
   // set the local name peripheral advertises
   // (need to do some converting from Arduino strings to const c strings)
@@ -40,6 +43,7 @@ void homeInit() {
 
   // set the UUID for the service this peripheral advertises
   BLE.setAdvertisedService(inboxService);
+  BLE.setAdvertisingInterval(400); // increase the interval between advertisements to reduce collisions
 
   // start advertising
   BLE.advertise();
@@ -58,12 +62,16 @@ void checkInbox() {
 
   // if a central is connected to peripheral:
   if (central) {
+    unsigned long conn_start = millis();
     Serial.print("Connected to central: ");
     // print the central's MAC address:
     Serial.println(central.address());
 
-    // wait for central to do its thing
-    while (central.connected());
+    // wait for central to do its thing but kick it out after a maximum timeout
+    while (central.connected() && millis() - conn_start < CONN_TIMEOUT);
+    if (central.connected()) {
+      central.disconnect();
+    }
 
     Serial.print("Disconnected from central: ");
     Serial.println(central.address());
@@ -110,7 +118,6 @@ void initOutbox(const String monsterName, uint32_t key) {
 
   // TODO: set value of KEY characteristic
   // outboxKey.writeValue(...)
-
   BLE.addService(outboxService);
 }
 
