@@ -1,4 +1,4 @@
-const String monsters[8] = {"Trevin", "Jefferjohn", "Tomothy", "Briandon", "Sleven", "Marcob", "Granthony", "Monstaff"};
+const String monsters[8] = {"Jefferjohn", "Trevin", "Tomothy", "Briandon", "Sleven", "Marcob", "Granthony", "Monstaff"};
 
 /* Helper function to get index out of BLE MAC address */
 uint32_t hashBLEAddr() {
