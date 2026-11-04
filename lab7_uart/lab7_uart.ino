@@ -3,7 +3,7 @@
  * Author: Milda Zizyte
  */
 
-#include "lab7.h"
+#include "lab7_uart.h"
 
 // IMPORTANT: make sure this is present for one device and absent (commented out) for the other!!
 #define SENDER

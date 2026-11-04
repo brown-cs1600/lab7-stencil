@@ -4,7 +4,7 @@
  * Send start bit, byte B, and parity on outPin
  *
  * NOTE: no guarantees that USB Serial will work in this function,
- * since it is very timing-sensistive (each bit is ~100us)
+ * since it is very timing-sensitive (each bit is ~100us)
  */
 void uartSend(byte B) {
   // send start bit
@@ -60,7 +60,7 @@ inline void loopSender() {
   while (!bufIsEmpty()) {
     Serial.println(bufGet(0), HEX);
     uartSend(bufRemove());
-    delayMicroseconds(200);
+    delayMicroseconds(208);
   }
   // do it all again after 1 second
   delay(1000);

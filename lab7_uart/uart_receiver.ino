@@ -7,6 +7,7 @@
  * NOTE: USB Serial will not work in this function because it is an ISR of higher priority
  */
 void uartReceive() {
+  detachInterrupt(digitalPinToInterrupt(inPin)); // disable this interrupt
   // delay for 1/3 of the UART period just to get reads towards the middle of bits
   delayMicroseconds(UART_PERIOD_MICROS / 3);
   unsigned long lastClockTime = micros();
@@ -40,6 +41,7 @@ void uartReceive() {
 
   // get past this last bit so as not to trigger an early interrupt
   uartDelay(lastClockTime);
+  attachInterrupt(digitalPinToInterrupt(inPin), uartReceive, FALLING); // re-enable this interrupt
 }
 
 inline void loopReceiver() {
@@ -51,7 +53,9 @@ inline void loopReceiver() {
   interrupts();
 
   if (bl >= 6) {
+    Serial.println("");
     byte indx = bufRemove();
+    Serial.print("0: ");
     Serial.println(indx, HEX);
     // check that this is the start of a frame
     if (indx >= 3) return;
@@ -60,12 +64,15 @@ inline void loopReceiver() {
     uint32_t dispVal = 0;
     for (int i = 0; i < 4; i++) {
       byte b = bufGet(i);
+      Serial.print(i + 1);
+      Serial.print(": ");
       Serial.println(b, HEX);
       if (b == 0xff) return; // end byte encountered too early
       dispVal |= ((uint32_t) b) << (i * 8);
     }
 
     // check for end message
+    Serial.print("5: ");
     Serial.println(bufGet(4), HEX);
     if (bufGet(4) != 0xff) return; // did not see expected end byte
 
