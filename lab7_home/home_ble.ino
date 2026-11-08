@@ -43,7 +43,7 @@ void homeInit() {
 
   // set the UUID for the service this peripheral advertises
   BLE.setAdvertisedService(inboxService);
-  BLE.setAdvertisingInterval(400); // increase the interval between advertisements to reduce collisions
+  BLE.setAdvertisingInterval(200); // increase the interval between advertisements to reduce collisions
 
   // start advertising
   BLE.advertise();
@@ -89,7 +89,6 @@ void checkInbox() {
         // If this is the first connection, change the monster's name and advertise outbox service
         if (!initialized) {
           Serial.println("initializing!");
-          BLE.disconnect();
           // TODO: uncomment below for step 3C
           //initOutbox(name, key);
 

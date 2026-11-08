@@ -34,5 +34,6 @@ uint32_t encrypt(String password, uint32_t value);
 /* monster utilities */
 void addMonster(String name, String key);
 bool hasMonster(String name);
+bool foundAllMonsters();
 void printMonsterOptions();
 void displayMonster(int index);

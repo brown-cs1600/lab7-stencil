@@ -22,9 +22,11 @@ void roamInit();
 void scanForMonsters();
 void sendMonster(BLEDevice p, int32_t key, String name);
 uint32_t getBLEIntValue(BLECharacteristic c);
-BLEDevice connectByName(const String name);
-BLEDevice connectByAddress(const String addr);
-BLEDevice connectToOutboxUuid();
+BLEDevice connectByScan(BLEDevice (*scanFun) (const String, unsigned long), const String iden_val);
+bool attemptConnectAndDiscover(BLEDevice p, int max_retries);
+BLEDevice connectScanName(const String name);
+BLEDevice connectScanAddress(const String addr);
+BLEDevice connectScanUuuid(const String uuid);
 
 /* AES128 utilities */
 String encrypt(String key, String value);
@@ -35,3 +37,4 @@ String getMonsterName();
 uint32_t getMonsterKey();
 void addMonster(String name);
 bool hasMonster(String name);
+bool foundAllMonsters();

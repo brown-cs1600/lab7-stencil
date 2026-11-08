@@ -20,7 +20,7 @@ void roamInit() {
   randomSeed(hashBLEAddr());
 
   // Scan for corresponding home device
-  BLEDevice home = connectByName(specialName);
+  BLEDevice home = connectByScan(connectScanName, specialName);
 
   Serial.println("Connecting to our home device!");
 
@@ -43,6 +43,20 @@ void roamInit() {
 }
 
 /*
+ * Wrapper for the connectScan functions, to reduce network traffic by only spending a proportion of time scanning
+ * Blocking (only returns when device has successfully connected), hence the need to not hog the network
+ * Takes in a scan function (connectScanName, connectScanAddress, connectScanUuid)
+ * and the corresponding identifier (name, address, uuid) to scan for
+ */
+BLEDevice connectByScan(BLEDevice (*scanFun) (const String, unsigned long), const String iden_val) {
+  const int PERCENT = 10; // percent of time to be scanning vs. idle
+  while(true) {
+    BLEDevice d = scanFun(iden_val, PERCENT * 100);
+    if (d) return d;
+    delay((100 - PERCENT) * random(90, 110));
+  }
+}
+/*
  * Attempts to connect to and discover attributes of given peripheral
  * Performs exponential backoff if doesn't succeed, to reduce network congestion
  * Retries up to the given maximum
@@ -61,13 +75,15 @@ bool attemptConnectAndDiscover(BLEDevice p, int max_retries) {
 }
 
 /*
- * wrapper for BLE scanForName function
- * blocks until peripheral is found
+ * wrapper for BLE scanForName, connect, and discover functions
+ * returns empty BLEDevice if timeout is exceeded
  */
-BLEDevice connectByName(const String name) {
+BLEDevice connectScanName(const String name, unsigned long timeout) {
   const char* nameCStr = name.c_str();
   BLE.scanForName(nameCStr);
-  while(true) {
+  unsigned long startTime = millis();
+  while(millis() - startTime < timeout) {
+    delay(10);
     BLEDevice peripheral = BLE.available();
 
     if (!peripheral) continue;
@@ -76,39 +92,46 @@ BLEDevice connectByName(const String name) {
 
     // IMPORTANT: need to connect and discoverAttributes if we'll be reading/writing characterstics
     // We keep retrying to connect if connection fails
-    if (attemptConnectAndDiscover(peripheral, 100)) {
+    if (attemptConnectAndDiscover(peripheral, 20)) {
       return peripheral;
     } else {
       BLE.scanForName(nameCStr);
     }
   }
+  BLE.stopScan();
+  return BLEDevice(); // empty device
 }
 
 /*
- * wrapper for BLE scanForUuid function 
- * to connect to devices with outbox service
- * ignores monsters that were already found
- * blocks until peripheral is successfully connected
+ * wrapper for BLE scanForUuid, connect, and discover functions
+ * IGNORES MONSTER THAT HAS ALREADY BEEN FOUND
+ * returns empty BLEDevice if timeout is exceeded
  */
-BLEDevice connectToOutboxUuid() {
-  BLE.scanForUuid(UUID_SERVICE_OUTBOX);
+BLEDevice connectScanUuid(const String uuid, unsigned long timeout) {
+  BLE.scanForUuid(uuid);
+  unsigned long startTime = millis();
   // TODO: return peripheral after connecting to it
   // Use the same number of retries as connectByAddress
   // IMPORTANT: do not try to connect to monsters you've already found!
   // (check this by calling peripheral.localName on an available peripheral)
-  while(true) {
+  while(millis() - startTime < timeout) {
+    delay(10);
 
   }
+  BLE.stopScan();
+  return BLEDevice(); // empty device
 }
 
 /*
- * wrapper for BLE scanForAddress function
- * blocks until peripheral is found
+ * wrapper for BLE scanForAddress, connect, and discover functions
+ * returns empty BLEDevice if timeout is exceeded
  */
-BLEDevice connectByAddress(const String addr) {
+BLEDevice connectScanAddress(const String addr, unsigned long timeout) {
   const char* addrCStr = addr.c_str();
   BLE.scanForAddress(addrCStr);
-  while(true) {
+  unsigned long startTime = millis();
+  while(millis() - startTime < timeout) {
+    delay(10);
     BLEDevice peripheral = BLE.available();
 
     if (!peripheral) continue;
@@ -119,9 +142,12 @@ BLEDevice connectByAddress(const String addr) {
     if (attemptConnectAndDiscover(peripheral, 6)) {
       return peripheral;
     } else {
+      // try the whole thing again
       BLE.scanForAddress(addrCStr);
     }
   }
+  BLE.stopScan();
+  return BLEDevice(); // empty device
 }
 
 /*
@@ -129,7 +155,7 @@ BLEDevice connectByAddress(const String addr) {
  * If home devices have keys, send key and name to local home device
  */
 void scanForMonsters() {
-  BLEDevice remote = connectToOutboxUuid();
+  BLEDevice remote = connectByScan(connectScanUuid, UUID_SERVICE_OUTBOX);
   Serial.print("Found monster ");
   String foundName = remote.localName();
   Serial.println(foundName);
@@ -139,7 +165,7 @@ void scanForMonsters() {
 
   remote.disconnect(); // done interacting with remote. Let them go!
 
-  BLEDevice local = connectByAddress(savedAddress);
+  BLEDevice local = connectByScan(connectScanAddress, savedAddress);
   // TODO: connect to local home device and send them the new monster for displaying!
   // remember that sendMonster does all the hashing for us
   // IMPORTANT: check if sendMonster succeeded and retry up to three times if it failed
@@ -150,6 +176,7 @@ void scanForMonsters() {
 /*
  * Helper function to hash and send found monster key and name
  * Assumes device is connected and attributes have been discovered
+ * returns false if writing to any of the characteristics failed
  */
 bool sendMonster(BLEDevice p, uint32_t key, String name) {
     uint32_t keyHashed = encrypt(password, key);

@@ -15,4 +15,9 @@ void loop() {
   delay(5000);
   // Collect keys from remote home devices
   scanForMonsters();
+
+  if (foundAllMonsters()) {
+    Serial.println("Congrats! You found all eight monsters!");
+    while(true);
+  }
 }
