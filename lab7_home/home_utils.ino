@@ -37,7 +37,7 @@ bool hasMonster(String name) {
 /* Returns true if and only if all 8 monsters have been found */
 bool foundAllMonsters() {
   for (int i = 0; i < 8; i++) {
-    if (!monsterFound[i]) return false;
+    if (!monsterKeys[i] == 0) return false;
   }
   return true;
 }
